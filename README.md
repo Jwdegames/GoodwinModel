@@ -1,2 +1,2 @@
 # GoodwinModel
-Visual Depiction of Goodwin's model, with equilibrium and extrema shown, along with 2 variations - a linear phillips curve, and an exponential phillips curve.
+Visual Depiction of Goodwin's model, with equilibrium and extrema shown, along with 2 variations - a linear phillips curve, and an exponential phillips curve. The Goodwin model is based off the Keynesian Harrod-Domar and Keynesian Phillips Curve models, and demonstrates how Employment and Wages creates a predator-prey cycle. See more info on it's wikipedia page: https://en.wikipedia.org/wiki/Goodwin_model_(economics)
