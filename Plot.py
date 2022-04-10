@@ -28,6 +28,10 @@ class Plot(FigureCanvasQTAgg):
         self.canvas = canvas
         self.x = []
         self.y = []
+        self.x2 = []
+        self.y2 = []
+        self.label = []
+        self.label2 = []
         self.axes = fig.add_subplot(111)
         super(Plot, self).__init__(fig)
         self.parent = parent
@@ -36,13 +40,22 @@ class Plot(FigureCanvasQTAgg):
         '''Set x coordinates of plot'''
         self.x = array
 
+    def setX2(self, array):
+        '''Set 2nd x coordinates of plot'''
+        self.x2 = array
+
     def setY(self, array):
         '''Set y coordinates of plot'''
         self.y = array
 
+    def setY2(self, array):
+        '''Set 2nd y coordinates of plot'''
+        self.y2 = array
+
     def plot(self):
         '''Plots the coordinates'''
-        self.axes.plot(self.x, self.y)
+        self.axes.plot(self.x, self.y, label = self.label)
+        self.axes.plot(self.x2, self.y2, label = self.label2)
 
     def makeToolbar(self):
         '''Makes a toolbar to interact with the graph'''
@@ -69,7 +82,19 @@ class Plot(FigureCanvasQTAgg):
         self.setXAxisTitle(titleX)
         self.setYAxisTitle(titleY)
 
-    def makeHLine(self, yCoord, color):
+    def setLabel(self, label):
+        '''Set the label to be used for the first plot in a legend'''
+        self.label = label
+
+    def setLabel2(self, label):
+        '''Set the label to be used for the second plot used in a legend'''
+        self.label2 = label
+
+    def makeHLine(self, y, c, linestyle = "solid", label = ""):
         '''Makes a horizontal line on the plot'''
-        self.axes.axhline(y = yCoord, c = color)
+        self.axes.axhline(y = y, c = c, linestyle = linestyle, label=label)
+
+    def showLegend(self):
+        '''Shows the legend in the plot'''
+        self.axes.legend()
 

@@ -49,16 +49,28 @@ class App(QMainWindow):
         qtRectangle.moveCenter(centerPoint)
         self.move(qtRectangle.topLeft())
 
+        # Begin making layout
+        self._main = QWidget()
+        self.setCentralWidget(self._main)
+        graphLayout = QVBoxLayout(self._main)
+
         # Make plot of Phillips Curve
         gM = GoodwinModel()
         phillipsPlot = gM.makePhillipsPlot(self, False)
         phillipsPlot.plot()
+
+
+        graphLayout.addWidget(phillipsPlot.makeToolbar())
+        graphLayout.addWidget(phillipsPlot)
         phillipsPlot.show()
-        self._main = QWidget()
-        self.setCentralWidget(self._main)
-        layout = QVBoxLayout(self._main)
-        layout.addWidget(phillipsPlot.makeToolbar())
-        layout.addWidget(phillipsPlot)
+
+        # Make parametric plots
+        parametricPlot = gM.makeParametricPlot()
+
+        graphLayout.addWidget(parametricPlot.makeToolbar())
+        graphLayout.addWidget(parametricPlot)
+        parametricPlot.show()
+        parametricPlot.showLegend()
 
     # Press the green button in the gutter to run the script.
 if __name__ == '__main__':

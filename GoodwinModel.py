@@ -299,6 +299,7 @@ class GoodwinModel:
 
     def makePhillipsPlot(self, parent, exponential):
         '''Makes the Phillips Curve Plot - should only be called once'''
+        self.parent = parent
         self.unemployment = np.linspace(0, 1, 100)
         self.inflation = -alpha + beta * (1 - unemployment)
         self.inflation2 = -alpha+beta * np.exp(k * (1-unemployment))
@@ -317,4 +318,59 @@ class GoodwinModel:
         return self.phillipsPlot
 
     def makeParametricPlot(self):
-        '''Makes parametric time plots - Phillips Curve plot should have been called already'''
+        '''Makes parametric time plots - Phillips Curve plot should have been made already'''
+        self.Z0 = [0.4, 0.55]  # initial conditions for u and mu
+        self.ts = np.linspace(0, 100, 175)
+        self.Zs = odeint(dZ_dt, self.Z0, self.ts, args=(self.v, self.theta, self.n, self.alpha, self.beta))
+        self.Z2s = odeint(dZ2_dt, self.Z0, self.ts, args=(self.v, self.theta, self.n, self.alpha, self.beta, self.k))
+        # use optional argument ’args’ to pass parameters to dZ_dt
+        # args=(2,0.2,0.2,0.3,0.2)
+        self.A = calc_A(self.v, self.theta, self.n, self.alpha)
+
+        if self.exponential:
+            self.wage_share = self.Z2s[:, 0]  # first column
+            self.employment = self.Z2s[:, 1]  # second column
+        else:
+            self.wage_share = self.Zs[:, 0]  # first column
+            self.employment = self.Zs[:, 1]  # second column
+        self.parametricPlot = Plot(self.parent, 5, 4, 100)
+
+        self.M0 = Z0[1] * beta / (alpha + theta)
+        self.U0 = Z0[0] / (v * (alpha + theta))
+        self.c2 = -np.log(M0 * U0 ** A) + M0 + U0
+
+        print("Wage Share Length:",len(self.wage_share))
+        print("Employment Length:", len(self.employment))
+        self.parametricPlot.setX(self.ts)
+        self.parametricPlot.setX2(self.ts)
+        self.parametricPlot.setY(self.wage_share)
+        self.parametricPlot.setY2(self.employment)
+
+        # Add axes and title
+        self.parametricPlot.setTitle("Parametric Plots of Goodwin Model")
+        self.parametricPlot.setAxesTitles("Time", "Percentage")
+        # Add labels
+        self.parametricPlot.setLabel("Wage Share (W.S.)")
+        self.parametricPlot.setLabel2("Employment Rate (E.R.)")
+        self.parametricPlot.plot()
+        # Draw the equilibrium lines where intersection on the plot means inflection point
+        self.parametricPlot.makeHLine(y=1 - self.v * (self.theta + self.n), c='g', linestyle='--',
+                                      label="E.R. Equilibirum")
+
+        self.parametricPlot.makeHLine(y=(self.alpha + self.theta) / self.beta, c='y', linestyle='--',
+                                      label = "W.S. Equilibrium")
+
+        # Draw the boundary lines where intersection on the plot means derivative is 0
+        self.parametricPlot.makeHLine(y=(self.alpha + self.theta) * self.v * -self.A * np.real(
+            lambertw(-np.exp((1 - self.c2) / self.A) / self.A)), c='c', linestyle='--', label = "W.S. Boundary")
+        self.parametricPlot.makeHLine(y=(self.alpha + self.theta) * self.v * -self.A * np.real(
+            lambertw(-np.exp((1 - self.c2) / self.A) / self.A, -1)), c='c', linestyle='--')
+        self.parametricPlot.makeHLine(y=-(self.alpha + self.theta) / self.beta * np.real(
+            lambertw(-np.exp((self.A - self.c2)) / (self.A ** self.A))), c='r', linestyle='--',
+                                      label = "E.R. Boundary")
+        self.parametricPlot.makeHLine(y=-(self.alpha + self.theta) / self.beta * np.real(
+            lambertw(-np.exp((self.A - self.c2)) / (self.A ** self.A), -1)), c='r', linestyle='--')
+
+        return self.parametricPlot
+
+
