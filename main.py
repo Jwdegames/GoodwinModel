@@ -16,7 +16,7 @@ import numpy as np
 
 #Import other files
 import GUI
-import GoodwinModel as GM
+from GoodwinModel import GoodwinModel
 from Plot import Plot
 
 
@@ -50,15 +50,8 @@ class App(QMainWindow):
         self.move(qtRectangle.topLeft())
 
         # Make plot of Phillips Curve
-        phillipsPlot = Plot(self, 5, 4, 100)
-        unemployment = np.linspace(0, 1, 100)
-        alpha = 1
-        beta = 0.1
-        inflation = -alpha + beta * (1 - unemployment)
-        print(len(unemployment))
-        print(len(inflation))
-        phillipsPlot.setX(unemployment)
-        phillipsPlot.setY(inflation)
+        gM = GoodwinModel()
+        phillipsPlot = gM.makePhillipsPlot(self, False)
         phillipsPlot.plot()
         phillipsPlot.show()
         self._main = QWidget()

@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import scipy as sp
 from scipy.integrate import odeint
 from scipy.special import lambertw
+from Plot import Plot
 #This program graphs employment and wage share, which are functions of time, from the Goodwin Model of Class Strucggle
 #mu is the employment rate
 #u is the wage share
@@ -285,3 +286,35 @@ plt.xlabel("Unemployment")
 plt.ylabel("Inflation")
 plt.title("Exponential Phillips Curve")
 plt.axhline(y = 0, c = 'k')
+
+class GoodwinModel:
+
+    def __init__(self):
+        self.v = 5
+        self.theta = 0.009
+        self.n = 0.075
+        self.alpha = 0.6
+        self.beta = 1
+        self.k = 0.2
+
+    def makePhillipsPlot(self, parent, exponential):
+        '''Makes the Phillips Curve Plot - should only be called once'''
+        self.unemployment = np.linspace(0, 1, 100)
+        self.inflation = -alpha + beta * (1 - unemployment)
+        self.inflation2 = -alpha+beta * np.exp(k * (1-unemployment))
+        self.phillipsPlot = Plot(parent, 5, 4, 100)
+        self.exponential = exponential
+        if exponential:
+            self.phillipsPlot.setY(inflation2)
+        else:
+            self.phillipsPlot.setY(inflation)
+        self.phillipsPlot.setX(unemployment)
+        # Add axes and title
+        self.phillipsPlot.setTitle("Phillips Curve")
+        self.phillipsPlot.setAxesTitles("Unemployment", "Inflation")
+        # Add reference line
+        self.phillipsPlot.makeHLine(0, 'k')
+        return self.phillipsPlot
+
+    def makeParametricPlot(self):
+        '''Makes parametric time plots - Phillips Curve plot should have been called already'''

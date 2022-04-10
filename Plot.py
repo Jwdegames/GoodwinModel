@@ -45,9 +45,31 @@ class Plot(FigureCanvasQTAgg):
         self.axes.plot(self.x, self.y)
 
     def makeToolbar(self):
+        '''Makes a toolbar to interact with the graph'''
         self.toolbar = NavigationToolbar(self, self.parent)
         return self.toolbar
 
     def clear(self):
         '''Clears the plot'''
         self.axes.cla()
+
+    def setTitle(self, title):
+        self.title = title
+        self.axes.set_title(title)
+
+    def setXAxisTitle(self, title):
+        self.xAxisTitle = title
+        self.axes.set_xlabel(title)
+
+    def setYAxisTitle(self, title):
+        self.yAxisTitle = title
+        self.axes.set_ylabel(title)
+
+    def setAxesTitles(self, titleX, titleY):
+        self.setXAxisTitle(titleX)
+        self.setYAxisTitle(titleY)
+
+    def makeHLine(self, yCoord, color):
+        '''Makes a horizontal line on the plot'''
+        self.axes.axhline(y = yCoord, c = color)
+
