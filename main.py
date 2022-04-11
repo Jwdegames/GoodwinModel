@@ -32,7 +32,7 @@ class App(QMainWindow):
         # Dimensions for App
         self.left = 10
         self.top = 10
-        self.width = 1920
+        self.width = 1800
         self.height = 1020
         self.initUI()
         self.show()
@@ -48,18 +48,44 @@ class App(QMainWindow):
         centerPoint = self.screen().availableGeometry().center()
         qtRectangle.moveCenter(centerPoint)
         self.move(qtRectangle.topLeft())
+        self.showMaximized()
 
         # Begin making layout
         self._main = QWidget()
         self.setCentralWidget(self._main)
         mainLayout = QGridLayout(self._main)
+        leftLayout = QGridLayout()
+        updateLayout = QFormLayout()
+        mainLayout.addLayout(leftLayout, 0, 0)
+        leftLayout.addLayout(updateLayout, 0, 0)
         graphLayout = QVBoxLayout()
-        mainLayout.addLayout(graphLayout, 1, 1)
+        mainLayout.addLayout(graphLayout, 0, 1)
+
+
+        # Add Input fields to the left side
+        self.vField = QLineEdit()
+        self.thetaField = QLineEdit()
+        self.nField = QLineEdit()
+        self.alphaField = QLineEdit()
+        self.betaField = QLineEdit()
+        self.kField = QLineEdit()
+        updateLayout.addRow("v (Capital-Output Ratio):", self.vField)
+        updateLayout.addRow("\u03B8 (Natural Growth Rate of Labor Productivity):", self.thetaField)
+        updateLayout.addRow("n (Natural Growth Rate of Amount of Workers):", self.nField)
+        updateLayout.addRow("\u03B1 (Inflation At Zero Unemployment):", self.alphaField)
+        updateLayout.addRow("\u03B2 (Inflation Slope):", self.betaField)
+        updateLayout.addRow("k (Inflation Exponent):", self.kField)
 
         # Make plot of Phillips Curve
         gM = GoodwinModel()
         phillipsPlot = gM.makePhillipsPlot(self, False)
         phillipsPlot.plot()
+        self.vField.setText(str(gM.v))
+        self.thetaField.setText(str(gM.theta))
+        self.nField.setText(str(gM.n))
+        self.alphaField.setText(str(gM.alpha))
+        self.betaField.setText(str(gM.beta))
+        self.kField.setText(str(gM.k))
 
 
         graphLayout.addWidget(phillipsPlot.makeToolbar())
@@ -73,6 +99,9 @@ class App(QMainWindow):
         graphLayout.addWidget(parametricPlot)
         parametricPlot.show()
         parametricPlot.showLegend()
+        # Shift plot over
+        paraPos = parametricPlot.axes.get_position()
+        parametricPlot.setPos(paraPos.x0 - 0.07, paraPos.y0, paraPos.width * 0.85, paraPos.height)
 
         # Make Goodwin Cycle Plot
         goodwinPlot = gM.makeGoodwinPlot()

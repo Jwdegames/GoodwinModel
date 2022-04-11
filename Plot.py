@@ -94,9 +94,9 @@ class Plot(FigureCanvasQTAgg):
         '''Makes a horizontal line on the plot'''
         self.axes.axhline(y = y, c = c, linestyle = linestyle, label=label)
 
-    def makeVLine(self, y, c, linestyle="solid", label=""):
+    def makeVLine(self, x, c, linestyle="solid", label=""):
         '''Makes a vertical line on the plot'''
-        self.axes.axvline(y=y, c=c, linestyle=linestyle, label=label)
+        self.axes.axvline(x=x, c=c, linestyle=linestyle, label=label)
 
     def setXTicks(self, ind = False, labels = False):
         '''Makes the x ticks on a set of labels'''
@@ -105,7 +105,10 @@ class Plot(FigureCanvasQTAgg):
         if labels != False:
             self.axes.set_xticklabels(labels)
 
-    def showLegend(self):
+    def showLegend(self, loc = 'center left', bbox_to_anchor=(0.97, 0.5)):
         '''Shows the legend in the plot'''
-        self.axes.legend()
+        self.axes.legend(loc = loc, bbox_to_anchor=bbox_to_anchor)
+
+    def setPos(self, x0, y0, width, height):
+        self.axes.set_position([x0, y0, width, height])
 

@@ -366,14 +366,14 @@ class GoodwinModel:
 
         # Add axes and title
         self.parametricPlot.setTitle("Parametric Plots of Goodwin Model")
-        self.parametricPlot.setAxesTitles("Time", "Percentage")
+        self.parametricPlot.setAxesTitles("Time", "Percentage As Decimal")
         # Add labels
         self.parametricPlot.setLabel("Wage Share (W.S.)")
         self.parametricPlot.setLabel2("Employment Rate (E.R.)")
         self.parametricPlot.plot()
         # Draw the equilibrium lines where intersection on the plot means inflection point
         self.parametricPlot.makeHLine(y=1 - self.v * (self.theta + self.n), c='g', linestyle='--',
-                                      label="E.R. Equilibirum")
+                                      label="E.R. Equilibrium")
 
         self.parametricPlot.makeHLine(y=(self.alpha + self.theta) / self.beta, c='y', linestyle='--',
                                       label = "W.S. Equilibrium")
@@ -399,8 +399,27 @@ class GoodwinModel:
         self.goodwinPlot.plot()
 
         # Add axes and title
-        self.goodwinPlot.setTitle("A Cycle of Goodwin's Model")
+        self.goodwinPlot.setTitle("A Cycle of Goodwin Model")
         self.goodwinPlot.setAxesTitles("Wage Share", "Employment Rate")
+
+        # Draw the equilibrium lines where intersection on the plot means inflection point
+        self.goodwinPlot.makeVLine(x=1 - self.v * (self.theta + self.n), c='g', linestyle='--',
+                                      label="E.R. Equilibrium")
+
+        self.goodwinPlot.makeHLine(y=(self.alpha + self.theta) / self.beta, c='y', linestyle='--',
+                                      label = "W.S. Equilibrium")
+
+        # Draw the boundary lines where intersection on the plot means derivative is 0
+        self.goodwinPlot.makeVLine(x=(self.alpha + self.theta) * self.v * -self.A * np.real(
+            lambertw(-np.exp((1 - self.c2) / self.A) / self.A)), c='c', linestyle='--', label = "W.S. Boundary")
+        self.goodwinPlot.makeVLine(x=(self.alpha + self.theta) * self.v * -self.A * np.real(
+            lambertw(-np.exp((1 - self.c2) / self.A) / self.A, -1)), c='c', linestyle='--')
+        self.goodwinPlot.makeHLine(y=-(self.alpha + self.theta) / self.beta * np.real(
+            lambertw(-np.exp((self.A - self.c2)) / (self.A ** self.A))), c='r', linestyle='--',
+                                      label = "E.R. Boundary")
+        self.goodwinPlot.makeHLine(y=-(self.alpha + self.theta) / self.beta * np.real(
+            lambertw(-np.exp((self.A - self.c2)) / (self.A ** self.A), -1)), c='r', linestyle='--')
+
         self.goodwinPlot.figure.tight_layout()
         return self.goodwinPlot
 
