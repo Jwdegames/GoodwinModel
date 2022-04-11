@@ -52,7 +52,9 @@ class App(QMainWindow):
         # Begin making layout
         self._main = QWidget()
         self.setCentralWidget(self._main)
-        graphLayout = QVBoxLayout(self._main)
+        mainLayout = QGridLayout(self._main)
+        graphLayout = QVBoxLayout()
+        mainLayout.addLayout(graphLayout, 1, 1)
 
         # Make plot of Phillips Curve
         gM = GoodwinModel()
@@ -71,6 +73,13 @@ class App(QMainWindow):
         graphLayout.addWidget(parametricPlot)
         parametricPlot.show()
         parametricPlot.showLegend()
+
+        # Make Goodwin Cycle Plot
+        goodwinPlot = gM.makeGoodwinPlot()
+
+        graphLayout.addWidget(goodwinPlot.makeToolbar())
+        graphLayout.addWidget(goodwinPlot)
+        goodwinPlot.show()
 
     # Press the green button in the gutter to run the script.
 if __name__ == '__main__':

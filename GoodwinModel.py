@@ -297,6 +297,23 @@ class GoodwinModel:
         self.beta = 1
         self.k = 0.2
 
+    def dZ_dt(self, Z, t, v=5, theta=0.009, n=0.075, alpha=0.6, beta=1):
+        '''Used to get the necessary coordinates for wage share and employment (linear version)'''
+        u, mu = Z[0], Z[1]
+        dudt, dmudt = (-(alpha + theta) + beta * mu) * u, (1 / v - (theta + n) - u / v) * mu
+        return [dudt, dmudt]
+
+    # exponential phillips curve
+    def dZ2_dt(self, Z, t, v=5, theta=0.009, n=0.075, alpha=0.6, beta=1, k=0.002):
+        '''Used to get the necessary coordinates for wage share and employment (exponential version)'''
+        u, mu = Z[0], Z[1]
+        dudt, dmudt = (-(alpha + theta) + beta * np.exp(k * mu)) * u, (1 / v - (theta + n) - u / v) * mu
+        return [dudt, dmudt]
+
+    def calc_A(self, v, theta, n, alpha):
+        '''Calculates the A value for linear phillips curve  '''
+        return (1 / v - (theta + n)) / (alpha + theta)
+
     def makePhillipsPlot(self, parent, exponential):
         '''Makes the Phillips Curve Plot - should only be called once'''
         self.parent = parent
@@ -315,17 +332,18 @@ class GoodwinModel:
         self.phillipsPlot.setAxesTitles("Unemployment", "Inflation")
         # Add reference line
         self.phillipsPlot.makeHLine(0, 'k')
+        self.phillipsPlot.figure.tight_layout()
         return self.phillipsPlot
 
     def makeParametricPlot(self):
         '''Makes parametric time plots - Phillips Curve plot should have been made already'''
         self.Z0 = [0.4, 0.55]  # initial conditions for u and mu
         self.ts = np.linspace(0, 100, 175)
-        self.Zs = odeint(dZ_dt, self.Z0, self.ts, args=(self.v, self.theta, self.n, self.alpha, self.beta))
-        self.Z2s = odeint(dZ2_dt, self.Z0, self.ts, args=(self.v, self.theta, self.n, self.alpha, self.beta, self.k))
+        self.Zs = odeint(self.dZ_dt, self.Z0, self.ts, args=(self.v, self.theta, self.n, self.alpha, self.beta))
+        self.Z2s = odeint(self.dZ2_dt, self.Z0, self.ts, args=(self.v, self.theta, self.n, self.alpha, self.beta, self.k))
         # use optional argument ’args’ to pass parameters to dZ_dt
         # args=(2,0.2,0.2,0.3,0.2)
-        self.A = calc_A(self.v, self.theta, self.n, self.alpha)
+        self.A = self.calc_A(self.v, self.theta, self.n, self.alpha)
 
         if self.exponential:
             self.wage_share = self.Z2s[:, 0]  # first column
@@ -339,8 +357,8 @@ class GoodwinModel:
         self.U0 = Z0[0] / (v * (alpha + theta))
         self.c2 = -np.log(M0 * U0 ** A) + M0 + U0
 
-        print("Wage Share Length:",len(self.wage_share))
-        print("Employment Length:", len(self.employment))
+        # print("Wage Share Length:",len(self.wage_share))
+        # print("Employment Length:", len(self.employment))
         self.parametricPlot.setX(self.ts)
         self.parametricPlot.setX2(self.ts)
         self.parametricPlot.setY(self.wage_share)
@@ -370,7 +388,21 @@ class GoodwinModel:
                                       label = "E.R. Boundary")
         self.parametricPlot.makeHLine(y=-(self.alpha + self.theta) / self.beta * np.real(
             lambertw(-np.exp((self.A - self.c2)) / (self.A ** self.A), -1)), c='r', linestyle='--')
-
+        self.parametricPlot.figure.tight_layout()
         return self.parametricPlot
+
+    def makeGoodwinPlot(self):
+        '''Makes a plot of the Goodwin Model - should be called after parametric plots are made'''
+        self.goodwinPlot = Plot(self.parent, 5, 4, 100)
+        self.goodwinPlot.setX(self.wage_share)
+        self.goodwinPlot.setY(self.employment)
+        self.goodwinPlot.plot()
+
+        # Add axes and title
+        self.goodwinPlot.setTitle("A Cycle of Goodwin's Model")
+        self.goodwinPlot.setAxesTitles("Wage Share", "Employment Rate")
+        self.goodwinPlot.figure.tight_layout()
+        return self.goodwinPlot
+
 
 
