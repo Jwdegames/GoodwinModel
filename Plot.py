@@ -64,7 +64,7 @@ class Plot(FigureCanvasQTAgg):
 
     def clear(self):
         '''Clears the plot'''
-        self.axes.cla()
+        self.axes.clear()
 
     def setTitle(self, title):
         self.title = title

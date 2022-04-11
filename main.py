@@ -37,6 +37,24 @@ class App(QMainWindow):
         self.initUI()
         self.show()
 
+    def updatePlots(self):
+        '''Updates the plots'''
+        # print("Called update")
+        # print(self.vField)
+        v = self.vField.text()
+        # print("V success")
+        theta = self.thetaField.text()
+        n = self.nField.text()
+        alpha = self.alphaField.text()
+        beta = self.betaField.text()
+        k = self.kField.text()
+        # print("Got Values")
+        self.gM.updateVals(float(v), float(theta), float(n), float(alpha), float(beta), float(k))
+        # print("Updated Values")
+        self.gM.updatePlots()
+        # print("Updated Plots")
+        self.gM.phillipsPlot.draw()
+
     def initUI(self):
         '''Initialize necessary UI elements'''
         # print(self.xRayPath)
@@ -72,14 +90,17 @@ class App(QMainWindow):
         updateLayout.addRow("v (Capital-Output Ratio):", self.vField)
         updateLayout.addRow("\u03B8 (Natural Growth Rate of Labor Productivity):", self.thetaField)
         updateLayout.addRow("n (Natural Growth Rate of Amount of Workers):", self.nField)
-        updateLayout.addRow("\u03B1 (Inflation At Zero Unemployment):", self.alphaField)
-        updateLayout.addRow("\u03B2 (Inflation Slope):", self.betaField)
+        updateLayout.addRow("\u03B1 (Negative Inflation At Full Unemployment):", self.alphaField)
+        updateLayout.addRow("\u03B2 (Negative Inflation Slope):", self.betaField)
         updateLayout.addRow("k (Inflation Exponent):", self.kField)
 
         # Make plot of Phillips Curve
         gM = GoodwinModel()
+        self.gM = gM
         phillipsPlot = gM.makePhillipsPlot(self, False)
         phillipsPlot.plot()
+
+        # Update the fields with the initial values of the Goodwin Model
         self.vField.setText(str(gM.v))
         self.thetaField.setText(str(gM.theta))
         self.nField.setText(str(gM.n))
@@ -109,6 +130,13 @@ class App(QMainWindow):
         graphLayout.addWidget(goodwinPlot.makeToolbar())
         graphLayout.addWidget(goodwinPlot)
         goodwinPlot.show()
+
+        # Make the rest of the left side
+        # Make the update button
+        updateButton = GUI.makeButton(self, "Update", 0, 0, 100, 100)
+        updateButton.setFont(QFont('Times', 16))
+        updateButton.clicked.connect(lambda: self.updatePlots())
+        leftLayout.addWidget(updateButton, 0, 1)
 
     # Press the green button in the gutter to run the script.
 if __name__ == '__main__':

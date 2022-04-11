@@ -297,6 +297,22 @@ class GoodwinModel:
         self.beta = 1
         self.k = 0.2
 
+    def updateVals(self, v, theta, n, alpha, beta, k):
+        '''Updates the values'''
+        self.v = v
+        self.theta = theta
+        self.n = n
+        self.alpha = alpha
+        self.beta = beta
+        self.k = k
+
+    def updatePlots(self):
+        '''Updates the plots'''
+        self.clearPhillipsPlot()
+        self.populatePhillipsPlot()
+        self.phillipsPlot.plot()
+
+
     def dZ_dt(self, Z, t, v=5, theta=0.009, n=0.075, alpha=0.6, beta=1):
         '''Used to get the necessary coordinates for wage share and employment (linear version)'''
         u, mu = Z[0], Z[1]
@@ -317,23 +333,31 @@ class GoodwinModel:
     def makePhillipsPlot(self, parent, exponential):
         '''Makes the Phillips Curve Plot - should only be called once'''
         self.parent = parent
-        self.unemployment = np.linspace(0, 1, 100)
-        self.inflation = -alpha + beta * (1 - unemployment)
-        self.inflation2 = -alpha+beta * np.exp(k * (1-unemployment))
-        self.phillipsPlot = Plot(parent, 5, 4, 100)
         self.exponential = exponential
-        if exponential:
-            self.phillipsPlot.setY(inflation2)
+        self.unemployment = np.linspace(0, 1, 100)
+        self.phillipsPlot = Plot(parent, 5, 4, 100)
+        self.populatePhillipsPlot()
+        self.phillipsPlot.figure.tight_layout()
+        return self.phillipsPlot
+
+    def clearPhillipsPlot(self):
+        '''Clears Phillips Plot'''
+        self.phillipsPlot.clear()
+
+    def populatePhillipsPlot(self):
+        '''Adds all necessary data to Phillips Plot'''
+        self.inflation = -self.alpha + self.beta * (1 - self.unemployment)
+        self.inflation2 = -self.alpha + self.beta * np.exp(self.k * (1-self.unemployment))
+        if self.exponential:
+            self.phillipsPlot.setY(self.inflation2)
         else:
-            self.phillipsPlot.setY(inflation)
-        self.phillipsPlot.setX(unemployment)
+            self.phillipsPlot.setY(self.inflation)
+        self.phillipsPlot.setX(self.unemployment)
         # Add axes and title
         self.phillipsPlot.setTitle("Phillips Curve")
         self.phillipsPlot.setAxesTitles("Unemployment", "Inflation")
         # Add reference line
         self.phillipsPlot.makeHLine(0, 'k')
-        self.phillipsPlot.figure.tight_layout()
-        return self.phillipsPlot
 
     def makeParametricPlot(self):
         '''Makes parametric time plots - Phillips Curve plot should have been made already'''
