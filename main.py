@@ -39,21 +39,20 @@ class App(QMainWindow):
 
     def updatePlots(self):
         '''Updates the plots'''
-        # print("Called update")
-        # print(self.vField)
+        print("Called update")
+        print(self.vField)
         v = self.vField.text()
-        # print("V success")
+        print("V success")
         theta = self.thetaField.text()
         n = self.nField.text()
         alpha = self.alphaField.text()
         beta = self.betaField.text()
         k = self.kField.text()
-        # print("Got Values")
+        print("Got Values")
         self.gM.updateVals(float(v), float(theta), float(n), float(alpha), float(beta), float(k))
-        # print("Updated Values")
+        print("Updated Values")
         self.gM.updatePlots()
-        # print("Updated Plots")
-        self.gM.phillipsPlot.draw()
+        print("Updated Plots")
 
     def initUI(self):
         '''Initialize necessary UI elements'''

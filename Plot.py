@@ -32,6 +32,8 @@ class Plot(FigureCanvasQTAgg):
         self.y2 = []
         self.label = []
         self.label2 = []
+        self.color = 'b'
+        self.color2 = 'r'
         self.axes = fig.add_subplot(111)
         super(Plot, self).__init__(fig)
         self.parent = parent
@@ -54,8 +56,8 @@ class Plot(FigureCanvasQTAgg):
 
     def plot(self):
         '''Plots the coordinates'''
-        self.axes.plot(self.x, self.y, label = self.label)
-        self.axes.plot(self.x2, self.y2, label = self.label2)
+        self.axes.plot(self.x, self.y, label = self.label, c = self.color)
+        self.axes.plot(self.x2, self.y2, label = self.label, c = self.color2)
 
     def makeToolbar(self):
         '''Makes a toolbar to interact with the graph'''
@@ -65,6 +67,7 @@ class Plot(FigureCanvasQTAgg):
     def clear(self):
         '''Clears the plot'''
         self.axes.clear()
+        self.axes.cla()
 
     def setTitle(self, title):
         self.title = title
@@ -108,6 +111,7 @@ class Plot(FigureCanvasQTAgg):
     def showLegend(self, loc = 'center left', bbox_to_anchor=(0.97, 0.5)):
         '''Shows the legend in the plot'''
         self.axes.legend(loc = loc, bbox_to_anchor=bbox_to_anchor)
+        print("Showing legend")
 
     def setPos(self, x0, y0, width, height):
         self.axes.set_position([x0, y0, width, height])
