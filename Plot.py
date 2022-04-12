@@ -30,8 +30,8 @@ class Plot(FigureCanvasQTAgg):
         self.y = []
         self.x2 = []
         self.y2 = []
-        self.label = []
-        self.label2 = []
+        self.label = "_nolegend_"
+        self.label2 = "_nolegend_"
         self.color = 'b'
         self.color2 = 'r'
         self.axes = fig.add_subplot(111)
@@ -57,7 +57,7 @@ class Plot(FigureCanvasQTAgg):
     def plot(self):
         '''Plots the coordinates'''
         self.axes.plot(self.x, self.y, label = self.label, c = self.color)
-        self.axes.plot(self.x2, self.y2, label = self.label, c = self.color2)
+        self.axes.plot(self.x2, self.y2, label = self.label2, c = self.color2)
 
     def makeToolbar(self):
         '''Makes a toolbar to interact with the graph'''

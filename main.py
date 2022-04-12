@@ -54,6 +54,24 @@ class App(QMainWindow):
         self.gM.updatePlots()
         print("Updated Plots")
 
+    def togglePhillips(self):
+        '''Switches the mode of the Phillips Curve'''
+        if self.gM.exponential == True:
+            self.phillipsButton.setText("Switch To Exponential Phillips Curve")
+            self.alphaField.setText(str(0.6))
+            self.betaField.setText(str(1))
+        else:
+            self.phillipsButton.setText("Switch To Linear Phillips Curve")
+            self.alphaField.setText(str(1))
+            self.betaField.setText(str(0.1))
+            self.kField.setText(str(4.5))
+        self.vField.setText(str(5))
+        self.thetaField.setText(str(0.009))
+        self.nField.setText(str(0.075))
+        self.gM.exponential = not self.gM.exponential
+
+        self.updatePlots()
+
     def initUI(self):
         '''Initialize necessary UI elements'''
         # print(self.xRayPath)
@@ -129,13 +147,22 @@ class App(QMainWindow):
         graphLayout.addWidget(goodwinPlot.makeToolbar())
         graphLayout.addWidget(goodwinPlot)
         goodwinPlot.show()
+        goodwinPlot.showLegend(bbox_to_anchor = (1, 0.5))
+        # Shift plot over
+        gPos = goodwinPlot.axes.get_position()
+        goodwinPlot.setPos(gPos.x0 - 0.07, gPos.y0, gPos.width * 0.85, gPos.height)
 
         # Make the rest of the left side
         # Make the update button
         updateButton = GUI.makeButton(self, "Update", 0, 0, 100, 100)
         updateButton.setFont(QFont('Times', 16))
         updateButton.clicked.connect(lambda: self.updatePlots())
-        leftLayout.addWidget(updateButton, 0, 1)
+        phillipsButton = GUI.makeButton(self, "Switch To Exponential Phillips Curve", 0, 0, 100, 100)
+        self.phillipsButton = phillipsButton
+        phillipsButton.setFont(QFont('Times', 16))
+        phillipsButton.clicked.connect(lambda: self.togglePhillips())
+        leftLayout.addWidget(updateButton, 1, 0)
+        leftLayout.addWidget(phillipsButton, 1, 1)
 
     # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
