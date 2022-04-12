@@ -70,18 +70,22 @@ class Plot(FigureCanvasQTAgg):
         self.axes.cla()
 
     def setTitle(self, title):
+        '''Set's the plot's title'''
         self.title = title
         self.axes.set_title(title)
 
     def setXAxisTitle(self, title):
+        '''Sets the x-axis of the plot'''
         self.xAxisTitle = title
         self.axes.set_xlabel(title)
 
     def setYAxisTitle(self, title):
+        '''Sets the y-axis of the plot'''
         self.yAxisTitle = title
         self.axes.set_ylabel(title)
 
     def setAxesTitles(self, titleX, titleY):
+        '''Sets the axis titles of the plot'''
         self.setXAxisTitle(titleX)
         self.setYAxisTitle(titleY)
 
@@ -108,11 +112,12 @@ class Plot(FigureCanvasQTAgg):
         if labels != False:
             self.axes.set_xticklabels(labels)
 
-    def showLegend(self, loc = 'center left', bbox_to_anchor=(0.97, 0.5)):
+    def showLegend(self, loc = 'center left', bbox_to_anchor=(1.00, 0.5)):
         '''Shows the legend in the plot'''
         self.axes.legend(loc = loc, bbox_to_anchor=bbox_to_anchor)
         print("Showing legend")
 
     def setPos(self, x0, y0, width, height):
+        '''Sets the plot's position'''
         self.axes.set_position([x0, y0, width, height])
 
