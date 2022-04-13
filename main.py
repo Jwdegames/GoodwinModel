@@ -1,347 +1,227 @@
-import numpy as np
-from scipy.integrate import odeint
-from scipy.special import lambertw
-from Plot import Plot
+#Import necessary packages
+import sys
 
-'''Contains data about the Goodwin Model'''
+#Import PyQt6 for graphics
 
+from PyQt6.QtCore import *
+from PyQt6.QtWidgets import *
+from PyQt6.QtGui import *
+from PyQt6.QtWebEngineWidgets import QWebEngineView #, QWebEngineSettings
 
-def __init__(self):
-    self.Z0 = [0.4, 0.55]
-    self.v = 5
-    self.theta = 0.009
-    self.n = 0.075
-    self.alpha = 0.6
-    self.beta = 1
-    self.k = 0.2
+#System path imports
+from os import path
 
 
-def updateVals(self, u0, mu0, v, theta, n, alpha, beta, k):
-    '''Updates the values'''
-    self.Z0 = [u0, mu0]
-    self.v = v
-    self.theta = theta
-    self.n = n
-    self.alpha = alpha
-    self.beta = beta
-    self.k = k
+#Import other files
+import GUI
+from GoodwinModel import GoodwinModel
 
 
-def updatePlots(self):
-    '''Updates the plots'''
-    self.clearPhillipsPlot()
-    self.populatePhillipsPlot()
-    self.phillipsPlot.plot()
-    self.phillipsPlot.draw()
-    # print ("Updated Phillips Plot")
+class App(QMainWindow):
+    # Define variables
+    settings = {
 
-    self.clearParametricPlot()
-    self.populateParametricPlot()
-    self.parametricPlot.show()
-    self.parametricPlot.showLegend()
-    self.parametricPlot.draw()
+    }
 
-    self.clearGoodwinPlot()
-    self.populateGoodwinPlot()
-    self.goodwinPlot.show()
-    self.goodwinPlot.showLegend(bbox_to_anchor=(1, 0.5))
-    self.goodwinPlot.draw()
+    def __init__(self):
+        super().__init__()
+        self.title = "Goodwin Model Simulator"
+        # Dimensions for App
+        self.left = 10
+        self.top = 10
+        self.width = 1800
+        self.height = 1020
+        self.initUI()
+        self.show()
 
+    def updatePlots(self):
+        '''Updates the plots'''
+        #print("Called update")
+        #print(self.vField)
+        u0 = self.u0Field.text()
+        mu0 = self.mu0Field.text()
+        v = self.vField.text()
+        #print("V success")
+        theta = self.thetaField.text()
+        n = self.nField.text()
+        alpha = self.alphaField.text()
+        beta = self.betaField.text()
+        k = self.kField.text()
+        #print("Got Values")
+        self.gM.updateVals(float(u0), float(mu0), float(v), float(theta), float(n), float(alpha), float(beta), float(k))
+        #print("Updated Values")
+        self.gM.updatePlots()
+        #print("Updated Plots")
+        self.updateStats()
 
-def dZ_dt(self, Z, t, v=5, theta=0.009, n=0.075, alpha=0.6, beta=1):
-    '''Used to get the necessary coordinates for wage share and employment (linear version)'''
-    u, mu = Z[0], Z[1]
-    dudt, dmudt = (-(alpha + theta) + beta * mu) * u, (1 / v - (theta + n) - u / v) * mu
-    return [dudt, dmudt]
-
-
-# exponential phillips curve
-def dZ2_dt(self, Z, t, v=5, theta=0.009, n=0.075, alpha=0.6, beta=1, k=0.002):
-    '''Used to get the necessary coordinates for wage share and employment (exponential version)'''
-    u, mu = Z[0], Z[1]
-    dudt, dmudt = (-(alpha + theta) + beta * np.exp(k * mu)) * u, (1 / v - (theta + n) - u / v) * mu
-    return [dudt, dmudt]
-
-
-def calc_A(self, v, theta, n, alpha):
-    '''Calculates the A value for linear phillips curve'''
-    return (1 / v - (theta + n)) / (alpha + theta)
-
-
-def find_first_max(self, data_set):
-    '''Find first max in data set (used for debugging)
-    Data set should have a max and there should be at least 3 data points'''
-    for i in range(1, len(data_set) - 1):
-        if (data_set[i - 1] < data_set[i] and data_set[i + 1] < data_set[i]):
-            return data_set[i]
-
-
-def find_first_min(self, data_set):
-    '''Find first min in data set (used for debugging)
-    Data set should have a min and there should be at least 3 data points'''
-    for i in range(1, len(data_set) - 1):
-        if (data_set[i - 1] > data_set[i] and data_set[i + 1] > data_set[i]):
-            return data_set[i]
-
-
-def factorial(self, n):
-    '''Finds the factorial of n'''
-    if n <= 1:
-        return 1
-    else:
-        return n * self.factorial(n - 1)
-
-
-def approximate_integral_mu(self, k, mu, terms):
-    '''Calculate the approximation of the integral of e^(k*mu)/mu'''
-    if (terms == 1):
-        return np.log(mu)
-    elif (terms == 2):
-        return np.log(mu) + k * mu
-    else:
-        # General formula
-        n = terms - 1
-        return k ** n * mu ** n / (self.factorial(n) * (n)) + self.approximate_integral_mu(k, mu, n)
-
-
-def mu_function(self, coefficients, mu, u, terms_to_use):
-    '''Calculates the value of the mu side - u side'''
-    alpha = coefficients[0]
-    theta = coefficients[1]
-    beta = coefficients[2]
-    k = coefficients[3]
-    v = coefficients[4]
-    n = coefficients[5]
-    c = coefficients[6]
-    mu_side = -(alpha + theta) * np.log(mu) + beta * self.approximate_integral_mu(k, mu, terms_to_use)
-    u_side = (1 / v - (theta + n)) * np.log(u) - u / v + c
-    return mu_side - u_side
-
-
-# Finds the root of the mu function via bisection given the value of u and the upper and lower bounds of mu
-def bisect_mu_root(self, coefficients, u, lowerBound, upperBound, TOL, terms_to_use):
-    '''Given the coefficients of a cubic, the lower and upper bounds of an interval, and a tolerance, returns an
-    interval with the root such that the interval's bounds are within the tolerance'''
-    iterations = 0
-    # Determine the left and right values to be used for the while loop conditional
-    leftEval = self.mu_function(coefficients, lowerBound, u, terms_to_use)
-    rightEval = self.mu_function(coefficients, upperBound, u, terms_to_use)
-    # Continue looping until we are in tolerance and a root is in the interval
-    while (upperBound - lowerBound) > TOL or (
-            not ((leftEval <= 0 and rightEval >= 0) or leftEval >= 0 and rightEval <= 0)):
-        # Bisect the interval boundaries at the start of the loop, so code doesn't need to be rewritten for each conditional pathway
-        p = (lowerBound + upperBound) / 2
-        yp = self.mu_function(coefficients, p, u, terms_to_use)
-        # f(x) is increasing
-        if (self.mu_function(coefficients, lowerBound, u, terms_to_use) < self.mu_function(coefficients, upperBound,
-                                                                                           u, terms_to_use)):
-            # Reassign the boundary as needed
-            if yp < 0:
-                lowerBound = p
-            elif yp > 0:
-                upperBound = p
-            else:
-                return (p - TOL / 2, p + TOL / 2, iterations + 1)
-        # f(x) is decreasing
+    def togglePhillips(self):
+        '''Switches the mode of the Phillips Curve'''
+        if self.gM.exponential == True:
+            self.phillipsButton.setText("Switch To Exponential Phillips Curve")
+            self.alphaField.setText(str(0.6))
+            self.betaField.setText(str(1))
+            # Disable exponent field
+            self.kField.setReadOnly(True)
+            GUI.setBGColor(self.kField, "128, 128, 128")
         else:
-            # Reassign the boundary as needed
-            if yp < 0:
-                upperBound = p
-            elif yp > 0:
-                lowerBound = p
-            else:
-                return (p - TOL / 2, p + TOL / 2, iterations + 1)
-        iterations += 1
-        # Find the left and right y values to be used for the while loop conditional
-        leftEval = self.mu_function(coefficients, lowerBound, u, terms_to_use)
-        rightEval = self.mu_function(coefficients, upperBound, u, terms_to_use)
-    return (lowerBound, upperBound, iterations)
+            self.phillipsButton.setText("Switch To Linear Phillips Curve")
+            self.alphaField.setText(str(1))
+            self.betaField.setText(str(0.1))
+            self.kField.setText(str(4.5))
+            # Enable exponent field
+            self.kField.setReadOnly(False)
+            GUI.setBGColor(self.kField, "255, 255, 255")
+        self.u0Field.setText(str(0.4))
+        self.mu0Field.setText(str(0.55))
+        self.vField.setText(str(5))
+        self.thetaField.setText(str(0.009))
+        self.nField.setText(str(0.075))
+        self.gM.exponential = not self.gM.exponential
+
+        self.updatePlots()
+
+    def initUI(self):
+        '''Initialize necessary UI elements'''
+        # print(self.xRayPath)
+        self.setWindowTitle(self.title)
+        self.setGeometry(self.left, self.top, self.width, self.height)
+
+        # Center Self
+        qtRectangle = self.frameGeometry()
+        centerPoint = self.screen().availableGeometry().center()
+        qtRectangle.moveCenter(centerPoint)
+        self.move(qtRectangle.topLeft())
+        self.showMaximized()
+
+        # Begin making layout
+        self._main = QWidget()
+        self.setCentralWidget(self._main)
+        mainLayout = QHBoxLayout(self._main)
+        leftLayout = QGridLayout()
+        updateLayout = QFormLayout()
+
+        graphLayout = QVBoxLayout()
+        leftLayout.addLayout(updateLayout, 0, 0, 1, 2)
+        mainLayout.addLayout(leftLayout, 4)
+        mainLayout.addLayout(graphLayout, 3)
 
 
-def makePhillipsPlot(self, parent, exponential):
-    '''Makes the Phillips Curve Plot - should only be called once'''
-    self.parent = parent
-    self.exponential = exponential
-    self.unemployment = np.linspace(0, 1, 100)
-    self.phillipsPlot = Plot(parent, 5, 4, 100)
-    self.populatePhillipsPlot()
-    self.phillipsPlot.figure.tight_layout()
-    return self.phillipsPlot
+
+        # Add Input fields to the left side
+        self.u0Field = QLineEdit()
+        self.mu0Field = QLineEdit()
+        self.vField = QLineEdit()
+        self.thetaField = QLineEdit()
+        self.nField = QLineEdit()
+        self.alphaField = QLineEdit()
+        self.betaField = QLineEdit()
+        self.kField = QLineEdit()
+        self.kField.setReadOnly(True)
+        GUI.setBGColor(self.kField, "128, 128, 128")
+        updateLayout.addRow("u0 (Initial Wage Share):", self.u0Field)
+        updateLayout.addRow("\u03Bc0 (Initial Employment Rate):", self.mu0Field)
+        updateLayout.addRow("v (Capital-Output Ratio):", self.vField)
+        updateLayout.addRow("\u03B8 (Natural Growth Rate of Labor Productivity):", self.thetaField)
+        updateLayout.addRow("n (Natural Growth Rate of Amount of Workers):", self.nField)
+        updateLayout.addRow("\u03B1 (Negative Inflation At Full Unemployment):", self.alphaField)
+        updateLayout.addRow("\u03B2 (Negative Inflation Slope):", self.betaField)
+        updateLayout.addRow("k (Inflation Exponent):", self.kField)
+
+        # Make plot of Phillips Curve
+        gM = GoodwinModel()
+        self.gM = gM
+        phillipsPlot = gM.makePhillipsPlot(self, False)
+        phillipsPlot.plot()
+
+        # Update the fields with the initial values of the Goodwin Model
+        self.u0Field.setText(str(gM.Z0[0]))
+        self.mu0Field.setText(str(gM.Z0[1]))
+        self.vField.setText(str(gM.v))
+        self.thetaField.setText(str(gM.theta))
+        self.nField.setText(str(gM.n))
+        self.alphaField.setText(str(gM.alpha))
+        self.betaField.setText(str(gM.beta))
+        self.kField.setText(str(gM.k))
+
+        graphLayout.addWidget(phillipsPlot.makeToolbar())
+        graphLayout.addWidget(phillipsPlot)
+        phillipsPlot.show()
+
+        # Make parametric plots
+        parametricPlot = gM.makeParametricPlot()
+
+        graphLayout.addWidget(parametricPlot.makeToolbar())
+        graphLayout.addWidget(parametricPlot)
+        parametricPlot.show()
+        parametricPlot.showLegend()
+        # Shift plot over
+        paraPos = parametricPlot.axes.get_position()
+        parametricPlot.setPos(paraPos.x0 - 0.07, paraPos.y0, paraPos.width * 0.85, paraPos.height)
+
+        # Make Goodwin Cycle Plot
+        goodwinPlot = gM.makeGoodwinPlot()
+
+        graphLayout.addWidget(goodwinPlot.makeToolbar())
+        graphLayout.addWidget(goodwinPlot)
+        goodwinPlot.show()
+        goodwinPlot.showLegend(bbox_to_anchor = (1, 0.5))
+        # Shift plot over
+        gPos = goodwinPlot.axes.get_position()
+        goodwinPlot.setPos(gPos.x0 - 0.07, gPos.y0, gPos.width * 0.85, gPos.height)
+
+        # Make the rest of the left side
+        # Make the update and phillips switch button
+        updateButton = GUI.makeButton(self, "ㅤㅤㅤㅤㅤㅤㅤUpdate Plotsㅤㅤㅤㅤㅤㅤㅤ", 0, 0, 100, 100)
+        updateButton.setFont(QFont('Times', 16))
+        updateButton.clicked.connect(lambda: self.updatePlots())
+        phillipsButton = GUI.makeButton(self, "Switch To Exponential Phillips Curve", 0, 0, 100, 100)
+        self.phillipsButton = phillipsButton
+        phillipsButton.setFont(QFont('Times', 16))
+        phillipsButton.clicked.connect(lambda: self.togglePhillips())
+        leftLayout.addWidget(updateButton, 1, 1)
+        leftLayout.addWidget(phillipsButton, 2, 1)
+
+        # Add stats so the user can understand data better
+        self.statLabel = QLabel()
+        self.statLabel.setFont(QFont('Times', 16))
+        self.updateStats()
+        leftLayout.addWidget(self.statLabel, 1, 0, 2, 1)
+
+        # Add PDF
+        self.webView = QWebEngineView()
+        self.webView.settings().setAttribute(self.webView.settings().WebAttribute.PluginsEnabled, True)
+        self.webView.settings().setAttribute(self.webView.settings().WebAttribute.PdfViewerEnabled, True)
+        wd = path.dirname(sys.argv[0])
+        print("Working directory is", wd)
+        test_pdf = "Goodwin Model Simulator Guide.pdf"
+        filePath = f"file:///{wd}/{test_pdf}"
+        correctPath = filePath.replace("\\","/")
+        print("File path is", correctPath)
+        self.webView.setUrl(QUrl(correctPath))
+        leftLayout.addWidget(self.webView, 3, 0, 7, 2)
+
+    def updateStats(self):
+        '''Updates the stats label with data from the Goodwin Model'''
+        stats = "Employment Rate Equilibrium:\t {erEqui: 7.5f}\n"
+        stats += "Wage Share Equilibrium:\t\t {wsEqui: 7.5f}\n"
+        stats += "Employment Rate Upper Bound:\t {erUpperB: 7.5f}\n"
+        stats += "Employment Rate Lower Bound:\t {erLowerB: 7.5f}\n"
+        stats += "Wage Share Upper Bound:\t {wsUpperB: 7.5f}\n"
+        stats += "Wage Share Lower Bound:\t {wsLowerB: 7.5f}"
+        stats = stats.format(
+            erEqui = self.gM.erEqui,
+            wsEqui = self.gM.wsEqui,
+            erUpperB = self.gM.erUpperB,
+            erLowerB = self.gM.erLowerB,
+            wsUpperB = self.gM.wsUpperB,
+            wsLowerB = self.gM.wsLowerB
+        )
+        self.statLabel.setText(stats)
 
 
-def clearPhillipsPlot(self):
-    '''Clears Phillips Plot'''
-    self.phillipsPlot.clear()
 
-
-def populatePhillipsPlot(self):
-    '''Adds all necessary data to Phillips Plot'''
-    # 1 - unemployment rate = employment rate
-    self.inflation = -self.alpha + self.beta * (1 - self.unemployment)
-    self.inflation2 = -self.alpha + self.beta * np.exp(self.k * (1 - self.unemployment))
-    if self.exponential:
-        self.phillipsPlot.setY(self.inflation2)
-        print("Making exponential plot")
-    else:
-        self.phillipsPlot.setY(self.inflation)
-    self.phillipsPlot.setX(self.unemployment)
-    # Add axes and title
-    self.phillipsPlot.setTitle("Phillips Curve")
-    self.phillipsPlot.setAxesTitles("Unemployment", "Inflation")
-    # Add reference line
-    self.phillipsPlot.makeHLine(0, 'k')
-
-
-def makeParametricPlot(self, u=0.4, mu=0.55):
-    '''Makes parametric time plots - Phillips Curve plot should have been made already'''
-    self.Z0 = [u, mu]  # initial conditions for u and mu
-    self.ts = np.linspace(0, 100, 175)
-    self.terms_to_use = 20
-    self.parametricPlot = Plot(self.parent, 5, 4, 100)
-    self.populateParametricPlot()
-    self.parametricPlot.figure.tight_layout()
-    return self.parametricPlot
-
-
-def clearParametricPlot(self):
-    '''Clears Parametric Plot'''
-    self.parametricPlot.clear()
-
-
-def populateParametricPlot(self):
-    '''Adds all necessary data to parametric plot'''
-    self.Zs = odeint(self.dZ_dt, self.Z0, self.ts, args=(self.v, self.theta, self.n, self.alpha, self.beta))
-    self.Z2s = odeint(self.dZ2_dt, self.Z0, self.ts, args=(self.v, self.theta, self.n, self.alpha, self.beta, self.k))
-    # use optional argument ’args’ to pass parameters to dZ_dt
-    # args=(2,0.2,0.2,0.3,0.2)
-    self.A = self.calc_A(self.v, self.theta, self.n, self.alpha)
-
-    if self.exponential:
-        self.wage_share = self.Z2s[:, 0]  # first column
-        self.employment = self.Z2s[:, 1]  # second column
-    else:
-        self.wage_share = self.Zs[:, 0]  # first column
-        self.employment = self.Zs[:, 1]  # second column
-
-    self.parametricPlot.setX(self.ts)
-    self.parametricPlot.setX2(self.ts)
-    self.parametricPlot.setY(self.wage_share)
-    self.parametricPlot.setY2(self.employment)
-
-    self.M0 = self.Z0[1] * self.beta / (self.alpha + self.theta)
-    self.U0 = self.Z0[0] / (self.v * (self.alpha + self.theta))
-    self.c2 = -np.log(self.M0 * self.U0 ** self.A) + self.M0 + self.U0
-
-    # Add axes and title
-    self.parametricPlot.setTitle("Parametric Plots of Goodwin Model")
-    self.parametricPlot.setAxesTitles("Time", "Percentage As Decimal")
-    # Add labels
-    self.parametricPlot.setLabel("Wage Share (W.S.)")
-    self.parametricPlot.setLabel2("Employment Rate (E.R.)")
-    # Draw the equilibrium lines where intersection on the plot means inflection point
-    self.findEquiAndExtrema()
-    self.parametricPlot.makeHLine(y=self.erEqui, c='g', linestyle='--',
-                                  label="E.R. Equilibrium")
-
-    self.parametricPlot.makeHLine(y=self.wsEqui, c='y', linestyle='--',
-                                  label="W.S. Equilibrium")
-
-    # Draw the boundary lines where intersection on the plot means derivative is 0
-
-    self.parametricPlot.makeHLine(y=self.wsUpperB, c='c', linestyle='--', label="W.S. Boundary")
-
-    self.parametricPlot.makeHLine(y=self.wsLowerB, c='c', linestyle='--')
-
-    self.parametricPlot.makeHLine(y=self.erUpperB, c='r', linestyle='--',
-                                  label="E.R. Boundary")
-
-    self.parametricPlot.makeHLine(y=self.erLowerB, c='r', linestyle='--')
-    # print("WS Boundaries:", self.wsUpperB,"-",self.wsLowerB)
-    # print("ER Boundaries:", self.erUpperB,"-",self.erLowerB)
-    self.parametricPlot.plot()
-
-
-def findEquiAndExtrema(self):
-    '''Finds the equilibrium and extrema values'''
-    if self.exponential == True:
-        # Find equilibrium points
-        self.erEqui = 1 - self.v * (self.theta + self.n)
-        self.wsEqui = np.log((self.alpha + self.theta) / self.beta) / self.k
-
-        # Approximated integral values
-        self.A_mu0 = self.approximate_integral_mu(self.k, self.Z0[1], self.terms_to_use)
-        self.A_mu = self.approximate_integral_mu(self.k, self.wsEqui, self.terms_to_use)
-
-        # Common factors used in equation
-        self.f_mu = (1 / self.v - (self.theta + self.n))
-        self.f_mu2 = self.v * (self.theta + self.n) - 1
-
-        self.c = -(self.alpha + self.theta) * np.log(self.Z0[1]) + self.beta * self.A_mu0 - self.f_mu * \
-                 np.log(self.Z0[0]) + self.Z0[0] / self.v
-
-        coefficients = [self.alpha, self.theta, self.beta, self.k, self.v, self.n, self.c]
-
-        # Find the extrema
-        # Bisection method required for employment rate (mu) because integral can't be integrated
-        TOL = 1e-5
-        mu_lower_bound_tuple = self.bisect_mu_root(coefficients, self.erEqui, 1e-10, self.wsEqui, TOL,
-                                                   self.terms_to_use)
-        mu_upper_bound_tuple = self.bisect_mu_root(coefficients, self.erEqui, self.wsEqui, 1, TOL, self.terms_to_use)
-        self.u_lamb = self.wsEqui ** (-(self.alpha + self.theta) / self.f_mu) * \
-                      np.exp((self.beta * self.A_mu - self.c) / self.f_mu) / self.f_mu2
-        # print("Inner Lambert:",u_lamb)
-        self.wsUpperB = self.f_mu2 * np.real(lambertw(self.u_lamb, -1))
-        self.wsLowerB = self.f_mu2 * np.real(lambertw(self.u_lamb))
-        self.erUpperB = (mu_upper_bound_tuple[0] + mu_upper_bound_tuple[1]) / 2
-        self.erLowerB = (mu_lower_bound_tuple[0] + mu_lower_bound_tuple[1]) / 2
-    else:
-        # Find equilibrium points
-        self.erEqui = 1 - self.v * (self.theta + self.n)
-        self.wsEqui = (self.alpha + self.theta) / self.beta
-
-        # Find extrema
-        self.wsUpperB = (self.alpha + self.theta) * self.v * -self.A * np.real(
-            lambertw(-np.exp((1 - self.c2) / self.A) / self.A))
-        self.wsLowerB = (self.alpha + self.theta) * self.v * -self.A * np.real(
-            lambertw(-np.exp((1 - self.c2) / self.A) / self.A, -1))
-        self.erUpperB = -(self.alpha + self.theta) / self.beta * np.real(
-            lambertw(-np.exp((self.A - self.c2)) / (self.A ** self.A)))
-        self.erLowerB = -(self.alpha + self.theta) / self.beta * np.real(
-            lambertw(-np.exp((self.A - self.c2)) / (self.A ** self.A), -1))
-
-
-def makeGoodwinPlot(self):
-    '''Makes a plot of the Goodwin Model - should be called after parametric plots are made'''
-    self.goodwinPlot = Plot(self.parent, 5, 4, 100)
-    self.populateGoodwinPlot()
-    self.goodwinPlot.figure.tight_layout()
-    return self.goodwinPlot
-
-
-def clearGoodwinPlot(self):
-    '''Clears Goodwin Plot'''
-    self.goodwinPlot.clear()
-
-
-def populateGoodwinPlot(self):
-    '''Adds all necessary data to Goodwin plot'''
-    self.goodwinPlot.setX(self.wage_share)
-    self.goodwinPlot.setY(self.employment)
-    self.goodwinPlot.plot()
-
-    # Add axes and title
-    self.goodwinPlot.setTitle("A Cycle of the Goodwin Model")
-    self.goodwinPlot.setAxesTitles("Wage Share", "Employment Rate")
-
-    # Draw the equilibrium lines where intersection on the plot means inflection point
-    self.goodwinPlot.makeVLine(x=self.erEqui, c='g', linestyle='--',
-                               label="E.R. Equilibrium")
-
-    self.goodwinPlot.makeHLine(y=self.wsEqui, c='y', linestyle='--',
-                               label="W.S. Equilibrium")
-
-    # Draw the boundary lines where intersection on the plot means derivative is 0
-    self.goodwinPlot.makeVLine(x=self.wsUpperB, c='c', linestyle='--', label="W.S. Boundary")
-    self.goodwinPlot.makeVLine(x=self.wsLowerB, c='c', linestyle='--')
-    self.goodwinPlot.makeHLine(y=self.erUpperB, c='r', linestyle='--', label="E.R. Boundary")
-    self.goodwinPlot.makeHLine(y=self.erLowerB, c='r', linestyle='--')
+    # Press the green button in the gutter to run the script.
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    ex = App()
+    sys.exit(app.exec())
