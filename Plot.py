@@ -1,7 +1,4 @@
 # Computation imports
-import numpy as np
-import sys
-import matplotlib.pyplot as plt
 import matplotlib
 matplotlib.use('Qt5Agg')
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg, FigureCanvasQT
@@ -9,14 +6,6 @@ from matplotlib.backends.qt_compat import QtWidgets
 from matplotlib.backends.backend_qtagg import (
     FigureCanvas, NavigationToolbar2QT as NavigationToolbar)
 from matplotlib.figure import Figure
-import scipy as sp
-from scipy.integrate import odeint
-from scipy.special import lambertw
-
-#Graphical Imports
-from PyQt6.QtCore import QSize
-from PyQt6.QtWidgets import *
-from PyQt6.QtGui import *
 
 class Plot(FigureCanvasQTAgg):
     '''Makes a plot for graphical use that can be updated'''
@@ -112,7 +101,7 @@ class Plot(FigureCanvasQTAgg):
         if labels != False:
             self.axes.set_xticklabels(labels)
 
-    def showLegend(self, loc = 'center left', bbox_to_anchor=(1.00, 0.5)):
+    def showLegend(self, loc = 'center left', bbox_to_anchor=(0.93, 0.5)):
         '''Shows the legend in the plot'''
         self.axes.legend(loc = loc, bbox_to_anchor=bbox_to_anchor)
         print("Showing legend")

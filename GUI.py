@@ -1,12 +1,11 @@
 #Import PyQt6 for graphics
 
-from PyQt6.QtCore import QSize
 from PyQt6.QtWidgets import *
 from PyQt6.QtGui import *
 
 #Make an image
 def makeImage(label, src, left, top, width, height):
-    '''Make's an image'''
+    '''Makes an image'''
     im = QPixmap(src)
     im = im.scaled(width, height)
     label.setPixmap(im)
