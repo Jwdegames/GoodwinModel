@@ -3,14 +3,14 @@ import sys
 
 #Import PyQt6 for graphics
 
-from PyQt6.QtCore import *
-from PyQt6.QtWidgets import *
-from PyQt6.QtGui import *
-from PyQt6.QtWebEngineWidgets import QWebEngineView #, QWebEngineSettings
+from PyQt6.QtCore import QUrl
+from PyQt6.QtWidgets import QLabel, QLineEdit, QMainWindow, QWidget, QHBoxLayout, QGridLayout, QFormLayout, \
+    QVBoxLayout, QApplication, QPushButton, QToolBar
+from PyQt6.QtGui import QFont
+from PyQt6.QtWebEngineWidgets import QWebEngineView
 
 #System path imports
 from os import path
-
 
 #Import other files
 import GUI
@@ -18,10 +18,6 @@ from GoodwinModel import GoodwinModel
 
 
 class App(QMainWindow):
-    # Define variables
-    settings = {
-
-    }
 
     def __init__(self):
         super().__init__()
@@ -104,9 +100,6 @@ class App(QMainWindow):
         leftLayout.addLayout(updateLayout, 0, 0, 1, 2)
         mainLayout.addLayout(leftLayout, 4)
         mainLayout.addLayout(graphLayout, 3)
-
-
-
         # Add Input fields to the left side
         self.u0Field = QLineEdit()
         self.mu0Field = QLineEdit()
@@ -160,7 +153,6 @@ class App(QMainWindow):
 
         # Make Goodwin Cycle Plot
         goodwinPlot = gM.makeGoodwinPlot()
-
         graphLayout.addWidget(goodwinPlot.makeToolbar())
         graphLayout.addWidget(goodwinPlot)
         goodwinPlot.show()
@@ -185,20 +177,33 @@ class App(QMainWindow):
         self.statLabel = QLabel()
         self.statLabel.setFont(QFont('Times', 16))
         self.updateStats()
-        leftLayout.addWidget(self.statLabel, 1, 0, 2, 1)
-
+        leftLayout.addWidget(self.statLabel, 1, 0, 3, 1)
         # Add PDF
         self.webView = QWebEngineView()
         self.webView.settings().setAttribute(self.webView.settings().WebAttribute.PluginsEnabled, True)
         self.webView.settings().setAttribute(self.webView.settings().WebAttribute.PdfViewerEnabled, True)
+        '''
+        Uncomment to restore local loading of pdf files
+        You will also need to set the Initial Link equal to correct path
         wd = path.dirname(sys.argv[0])
         print("Working directory is", wd)
         test_pdf = "Goodwin Model Simulator Guide.pdf"
         filePath = f"file:///{wd}/{test_pdf}"
-        correctPath = filePath.replace("\\","/")
+        self.correctPath = filePath.replace("\\","/")
         print("File path is", correctPath)
-        self.webView.setUrl(QUrl(correctPath))
-        leftLayout.addWidget(self.webView, 3, 0, 7, 2)
+        '''
+        print("Loading Goodwin Simulator Guide from Google Drive")
+        self.initialLink = "https://drive.google.com/file/d/1kz_TAV4EHrcdj3pPmHUPC0BivjH8fFUk/view"
+        self.webView.setUrl(QUrl(self.initialLink))
+        # print("Set file path")
+        leftLayout.addWidget(self.webView, 4, 0, 7, 2)
+        # print("Added pdf viewer")
+
+        # Add a back button in case the user attempts to edit the google interface
+        self.backButton = QPushButton("Reset View To Simulator Guide")
+        self.backButton.setFont(QFont("Times", 16))
+        self.backButton.clicked.connect(self.reset)
+        leftLayout.addWidget(self.backButton, 3, 1)
 
     def updateStats(self):
         '''Updates the stats label with data from the Goodwin Model'''
@@ -218,9 +223,16 @@ class App(QMainWindow):
         )
         self.statLabel.setText(stats)
 
+    def closeEvent(self, event):
+        '''Indicates what is closing the application. Useful for debugging'''
+        print("Exit event: ", event)
 
+    def reset(self):
+        '''Goes back to initial link if not currently at the initial link'''
+        if self.webView.url().toString() != self.initialLink:
+            print("Resetting guide to initial link")
+            self.webView.setUrl(QUrl(self.initialLink))
 
-    # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     ex = App()

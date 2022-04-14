@@ -1,4 +1,4 @@
-import numpy as np
+from numpy import linspace, exp, log, real
 from scipy.integrate import odeint
 from scipy.special import lambertw
 from Plot import Plot
@@ -59,7 +59,7 @@ class GoodwinModel:
     def dZ2_dt(self, Z, t, v=5, theta=0.009, n=0.075, alpha=0.6, beta=1, k=0.002):
         '''Used to get the necessary coordinates for wage share and employment (exponential version)'''
         u, mu = Z[0], Z[1]
-        dudt, dmudt = (-(alpha + theta) + beta * np.exp(k * mu)) * u, (1 / v - (theta + n) - u / v) * mu
+        dudt, dmudt = (-(alpha + theta) + beta * exp(k * mu)) * u, (1 / v - (theta + n) - u / v) * mu
         return [dudt, dmudt]
 
 
@@ -95,9 +95,9 @@ class GoodwinModel:
     def approximate_integral_mu(self, k, mu, terms):
         '''Calculate the approximation of the integral of e^(k*mu)/mu'''
         if (terms == 1):
-            return np.log(mu)
+            return log(mu)
         elif (terms == 2):
-            return np.log(mu) + k * mu
+            return log(mu) + k * mu
         else:
             # General formula
             n = terms - 1
@@ -113,8 +113,8 @@ class GoodwinModel:
         v = coefficients[4]
         n = coefficients[5]
         c = coefficients[6]
-        mu_side = -(alpha + theta) * np.log(mu) + beta * self.approximate_integral_mu(k, mu, terms_to_use)
-        u_side = (1 / v - (theta + n)) * np.log(u) - u / v + c
+        mu_side = -(alpha + theta) * log(mu) + beta * self.approximate_integral_mu(k, mu, terms_to_use)
+        u_side = (1 / v - (theta + n)) * log(u) - u / v + c
         return mu_side - u_side
 
 
@@ -162,7 +162,7 @@ class GoodwinModel:
         '''Makes the Phillips Curve Plot - should only be called once'''
         self.parent = parent
         self.exponential = exponential
-        self.unemployment = np.linspace(0, 1, 100)
+        self.unemployment = linspace(0, 1, 100)
         self.phillipsPlot = Plot(parent, 5, 4, 100)
         self.populatePhillipsPlot()
         self.phillipsPlot.figure.tight_layout()
@@ -178,7 +178,7 @@ class GoodwinModel:
         '''Adds all necessary data to Phillips Plot'''
         # 1 - unemployment rate = employment rate
         self.inflation = -self.alpha + self.beta * (1 - self.unemployment)
-        self.inflation2 = -self.alpha + self.beta * np.exp(self.k * (1 - self.unemployment))
+        self.inflation2 = -self.alpha + self.beta * exp(self.k * (1 - self.unemployment))
         if self.exponential:
             self.phillipsPlot.setY(self.inflation2)
             print("Making exponential plot")
@@ -195,7 +195,7 @@ class GoodwinModel:
     def makeParametricPlot(self, u=0.4, mu=0.55):
         '''Makes parametric time plots - Phillips Curve plot should have been made already'''
         self.Z0 = [u, mu]  # initial conditions for u and mu
-        self.ts = np.linspace(0, 100, 175)
+        self.ts = linspace(0, 100, 175)
         self.terms_to_use = 20
         self.parametricPlot = Plot(self.parent, 5, 4, 100)
         self.populateParametricPlot()
@@ -230,7 +230,7 @@ class GoodwinModel:
 
         self.M0 = self.Z0[1] * self.beta / (self.alpha + self.theta)
         self.U0 = self.Z0[0] / (self.v * (self.alpha + self.theta))
-        self.c2 = -np.log(self.M0 * self.U0 ** self.A) + self.M0 + self.U0
+        self.c2 = -log(self.M0 * self.U0 ** self.A) + self.M0 + self.U0
 
         # Add axes and title
         self.parametricPlot.setTitle("Parametric Plots of Goodwin Model")
@@ -266,7 +266,7 @@ class GoodwinModel:
         if self.exponential == True:
             # Find equilibrium points
             self.erEqui = 1 - self.v * (self.theta + self.n)
-            self.wsEqui = np.log((self.alpha + self.theta) / self.beta) / self.k
+            self.wsEqui = log((self.alpha + self.theta) / self.beta) / self.k
 
             # Approximated integral values
             self.A_mu0 = self.approximate_integral_mu(self.k, self.Z0[1], self.terms_to_use)
@@ -276,8 +276,8 @@ class GoodwinModel:
             self.f_mu = (1 / self.v - (self.theta + self.n))
             self.f_mu2 = self.v * (self.theta + self.n) - 1
 
-            self.c = -(self.alpha + self.theta) * np.log(self.Z0[1]) + self.beta * self.A_mu0 - self.f_mu * \
-                     np.log(self.Z0[0]) + self.Z0[0] / self.v
+            self.c = -(self.alpha + self.theta) * log(self.Z0[1]) + self.beta * self.A_mu0 - self.f_mu * \
+                     log(self.Z0[0]) + self.Z0[0] / self.v
 
             coefficients = [self.alpha, self.theta, self.beta, self.k, self.v, self.n, self.c]
 
@@ -288,10 +288,10 @@ class GoodwinModel:
                                                        self.terms_to_use)
             mu_upper_bound_tuple = self.bisect_mu_root(coefficients, self.erEqui, self.wsEqui, 1, TOL, self.terms_to_use)
             self.u_lamb = self.wsEqui ** (-(self.alpha + self.theta) / self.f_mu) * \
-                          np.exp((self.beta * self.A_mu - self.c) / self.f_mu) / self.f_mu2
+                          exp((self.beta * self.A_mu - self.c) / self.f_mu) / self.f_mu2
             # print("Inner Lambert:",u_lamb)
-            self.wsUpperB = self.f_mu2 * np.real(lambertw(self.u_lamb, -1))
-            self.wsLowerB = self.f_mu2 * np.real(lambertw(self.u_lamb))
+            self.wsUpperB = self.f_mu2 * real(lambertw(self.u_lamb, -1))
+            self.wsLowerB = self.f_mu2 * real(lambertw(self.u_lamb))
             self.erUpperB = (mu_upper_bound_tuple[0] + mu_upper_bound_tuple[1]) / 2
             self.erLowerB = (mu_lower_bound_tuple[0] + mu_lower_bound_tuple[1]) / 2
         else:
@@ -300,14 +300,14 @@ class GoodwinModel:
             self.wsEqui = (self.alpha + self.theta) / self.beta
 
             # Find extrema
-            self.wsUpperB = (self.alpha + self.theta) * self.v * -self.A * np.real(
-                lambertw(-np.exp((1 - self.c2) / self.A) / self.A))
-            self.wsLowerB = (self.alpha + self.theta) * self.v * -self.A * np.real(
-                lambertw(-np.exp((1 - self.c2) / self.A) / self.A, -1))
-            self.erUpperB = -(self.alpha + self.theta) / self.beta * np.real(
-                lambertw(-np.exp((self.A - self.c2)) / (self.A ** self.A)))
-            self.erLowerB = -(self.alpha + self.theta) / self.beta * np.real(
-                lambertw(-np.exp((self.A - self.c2)) / (self.A ** self.A), -1))
+            self.wsUpperB = (self.alpha + self.theta) * self.v * -self.A * real(
+                lambertw(-exp((1 - self.c2) / self.A) / self.A))
+            self.wsLowerB = (self.alpha + self.theta) * self.v * -self.A * real(
+                lambertw(-exp((1 - self.c2) / self.A) / self.A, -1))
+            self.erUpperB = -(self.alpha + self.theta) / self.beta * real(
+                lambertw(-exp((self.A - self.c2)) / (self.A ** self.A)))
+            self.erLowerB = -(self.alpha + self.theta) / self.beta * real(
+                lambertw(-exp((self.A - self.c2)) / (self.A ** self.A), -1))
 
 
     def makeGoodwinPlot(self):

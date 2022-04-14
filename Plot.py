@@ -1,10 +1,7 @@
 # Computation imports
-import matplotlib
-matplotlib.use('Qt5Agg')
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg, FigureCanvasQT
-from matplotlib.backends.qt_compat import QtWidgets
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.backends.backend_qtagg import (
-    FigureCanvas, NavigationToolbar2QT as NavigationToolbar)
+    FigureCanvasQT, NavigationToolbar2QT as NavigationToolbar)
 from matplotlib.figure import Figure
 
 class Plot(FigureCanvasQTAgg):
@@ -13,7 +10,7 @@ class Plot(FigureCanvasQTAgg):
     def __init__(self, parent=None, width=5, height=4, dpi=100):
         fig = Figure(figsize=(width, height), dpi=dpi)
         self.fig = fig
-        canvas = FigureCanvas(fig)
+        canvas = FigureCanvasQT(fig)
         self.canvas = canvas
         self.x = []
         self.y = []
@@ -104,7 +101,7 @@ class Plot(FigureCanvasQTAgg):
     def showLegend(self, loc = 'center left', bbox_to_anchor=(0.93, 0.5)):
         '''Shows the legend in the plot'''
         self.axes.legend(loc = loc, bbox_to_anchor=bbox_to_anchor)
-        print("Showing legend")
+        # print("Showing legend")
 
     def setPos(self, x0, y0, width, height):
         '''Sets the plot's position'''

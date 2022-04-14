@@ -1,7 +1,7 @@
 #Import PyQt6 for graphics
 
-from PyQt6.QtWidgets import *
-from PyQt6.QtGui import *
+from PyQt6.QtWidgets import QPushButton
+from PyQt6.QtGui import QPixmap
 
 #Make an image
 def makeImage(label, src, left, top, width, height):
