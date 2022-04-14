@@ -1,2 +1,4 @@
 # GoodwinModel
 Visual Depiction of Goodwin's model, with equilibrium and extrema shown, along with 2 variations - a linear phillips curve, and an exponential phillips curve. The Goodwin model is based off the Keynesian Harrod-Domar and Keynesian Phillips Curve models, and demonstrates how Employment and Wages creates a predator-prey cycle. This program solves for the equilibrium and extrema using the Lokta-Volterra Model equations. See more info on it's wikipedia page: https://en.wikipedia.org/wiki/Goodwin_model_(economics)
+
+To use the simulator, you can either download the exe at [the Releases Page](https://github.com/Jwdegames/GoodwinModel/releases),or you can clone this repo and run the Python files. Make sure to have PyQt6, PyQt6-WebEngine, numpy, matplotlib, and scipy installed.
